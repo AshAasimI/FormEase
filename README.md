@@ -11,14 +11,15 @@ Upload a form (PDF or image), let AI detect every field, then fill it step-by-st
 We have Sample Forms under our Sample Folder for testing.
 
 1. Click the Live App link above.
-2. Download a Sample Form, Upload it to FormEase. Users can drag and drop their intended file too.
-3. FormEase will question the user the prompts based on the form
-4. If users find it hard it comprehend, they can click the Speaker Logo, the AI will convert the text to speech and play it as an audio
-5. If users find the language native to the form unfamiliar, they can translate it to Chinese, Malay and Tamil for cross-language uses
-6. If users feel the fonts and buttons are too small, they can enlarge the icons with the "Enlarge" button
-7. Once the user types in the answer for each question/blank in the form, FormEase will fill the form with these answers
-8. A preview will be shown for the user to check their answers to each question/blank
-9. Once the user confirms, a the user can save the form as a PDF
+2. Download a Sample Form, Upload it to FormEase. Users can drag and drop their intended file too
+3. FormEase scans the PDF and compiles the list of information needed to fill the form
+4. FormEase will question the user the prompts based on the form
+5. If users find it hard to comprehend the questions, they can click the Speaker Logo, the AI will convert the text to speech and play it as an audio
+6. If users find the language native to the form unfamiliar, they can translate it to Chinese, Malay and Tamil for cross-language uses
+7. If users feel the fonts and buttons are too small, they can enlarge the icons with the "Enlarge" button
+8. Once the user types in the answer for each question/blank in the form, FormEase will fill the form with these answers
+9. A preview will be shown for the user to check their answers to each question/blank
+10. Once the user confirms, a the user can save the form as a PDF
 
 ---
 
