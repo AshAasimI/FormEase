@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FormEase — Accessible Form Assistant</title>
+<style>
+/* ── reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── CSS custom properties (accessibility presets override these) ── */
+:root {
+  --bg: #0f1117;
+  --card: #161922;
+  --border: #2e3347;
+  --accent: #6366f1;
+  --accent-hover: #5459e0;
+  --text: #cbd5e1;
+  --text-bright: #e2e8f0;
+  --text-heading: #f1f5f9;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --error: #fb7185;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --font-size: 1rem;
+  --btn-size: 44px;
+  --input-font: 1.05rem;
+  --radius: 16px;
+  --scale: 1;
+  --pad-sm: 8px;
+  --pad-md: 16px;
+  --pad-lg: 28px;
+  --pad-xl: 48px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 20px;
+  --icon-size: 48px;
+  --heading-size: 2rem;
+  --sub-heading: 1.2rem;
+  --badge-font: 0.72rem;
+  --small-font: 0.82rem;
+  --thumb-width: 260px;
+  --max-width: 900px;
+  --btn-pad: 12px 28px;
+  --btn-font: 0.95rem;
+  --input-pad: 14px 16px;
+}
+
+/* ── enlarged mode ── */
+body.enlarged {
+  --font-size: 1.4rem;
+  --btn-size: 68px;
+  --input-font: 1.4rem;
+  --radius: 22px;
+  --scale: 1.35;
+  --pad-sm: 12px;
+  --pad-md: 24px;
+  --pad-lg: 40px;
+  --pad-xl: 64px;
+  --gap-sm: 14px;
+  --gap-md: 18px;
+  --gap-lg: 28px;
+  --icon-size: 72px;
+  --heading-size: 2.8rem;
+  --sub-heading: 1.6rem;
+  --badge-font: 0.92rem;
+  --small-font: 1.05rem;
+  --thumb-width: 320px;
+  --max-width: 1060px;
+  --btn-pad: 18px 40px;
+  --btn-font: 1.15rem;
+  --input-pad: 20px 22px;
+}
+
+/* ── base ── */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--pad-lg) var(--pad-md) var(--pad-xl);
+  font-size: var(--font-size);
+}
+
+/* ── top bar ── */
+.topbar {
+  width: 100%;
+  max-width: var(--max-width);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--gap-lg);
+  flex-wrap: wrap;
+  gap: var(--gap-md);
+}
+.topbar h1 {
+  font-size: var(--sub-heading);
+  font-weight: 700;
+  color: var(--text-heading);
+}
+.topbar h1 .accent { color: var(--accent); }
+
+.a11y-toggle {
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.a11y-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: var(--pad-sm) var(--pad-md);
+  font-family: inherit;
+  font-size: var(--small-font);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .25s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+.a11y-btn:hover { color: var(--text-bright); }
+.a11y-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── screens (only one visible at a time) ── */
+.screen { display: none; width: 100%; max-width: var(--max-width); }
+.screen.active { display: block; }
+
+/* ── UPLOAD SCREEN ── */
+.hero { text-align: center; margin-bottom: var(--pad-lg); max-width: 600px; margin-left: auto; margin-right: auto; }
+.hero h2 {
+  font-size: var(--heading-size);
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.5px;
+}
+.hero h2 .accent { color: var(--accent); }
+.hero p {
+  margin-top: var(--gap-md);
+  color: var(--text-muted);
+  font-size: var(--font-size);
+  line-height: 1.55;
+}
+
+.dropzone {
+  width: 100%;
+  max-width: 660px;
+  margin: 0 auto;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-xl) var(--pad-lg);
+  text-align: center;
+  cursor: pointer;
+  background: var(--card);
+  transition: border-color .2s, background .2s, transform .15s;
+}
+.dropzone:hover,
+.dropzone.over {
+  border-color: var(--accent);
+  background: #1c1f2e;
+}
+.dropzone.over { transform: scale(1.02); }
+.dropzone input { display: none; }
+.dropzone .icon { width: var(--icon-size); height: var(--icon-size); margin: 0 auto var(--pad-md); color: var(--accent); }
+.dropzone h3 { color: var(--text-bright); font-size: var(--sub-heading); margin-bottom: var(--pad-sm); }
+.dropzone p { color: var(--text-muted); font-size: var(--small-font); }
+.dropzone .browse { color: var(--accent); font-weight: 600; }
+.dropzone .formats { margin-top: var(--pad-md); color: var(--text-dim); font-size: var(--badge-font); letter-spacing: 0.6px; }
+
+/* ── PROCESSING SCREEN ── */
+.processing-box {
+  text-align: center;
+  padding: var(--pad-xl) var(--pad-md);
+}
+.processing-box .spinner-lg {
+  width: var(--icon-size); height: var(--icon-size);
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  margin: 0 auto var(--gap-lg);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-box p { color: var(--text-muted); font-size: var(--font-size); }
+
+/* ── WIZARD SCREEN ── */
+.wizard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--pad-md);
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+.step-label {
+  color: var(--text-muted);
+  font-size: var(--small-font);
+  font-weight: 600;
+}
+.progress-bar {
+  flex: 1;
+  max-width: 300px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width .3s ease;
+}
+
+.wizard-body {
+  display: grid;
+  grid-template-columns: var(--thumb-width) 1fr;
+  gap: var(--gap-lg);
+}
+
+/* form thumbnail */
+.thumb-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+}
+.thumb-card canvas {
+  width: 100%;
+  display: block;
+}
+.thumb-card .page-label {
+  padding: var(--pad-sm) var(--pad-md);
+  font-size: var(--badge-font);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+}
+
+/* question panel */
+.question-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pad-md);
+}
+
+.question-text {
+  font-size: var(--sub-heading);
+  color: var(--text-heading);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.field-type-badge {
+  display: inline-block;
+  background: var(--border);
+  color: var(--text-muted);
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: var(--badge-font);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: var(--gap-sm);
+  vertical-align: middle;
+}
+
+/* translation + TTS row */
+.assist-row {
+  display: flex;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.lang-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--gap-sm);
+  padding: var(--pad-sm) var(--pad-md);
+  font-family: inherit;
+  font-size: var(--small-font);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  min-height: var(--btn-size);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+.lang-btn:hover { border-color: var(--accent); color: var(--text-bright); }
+.lang-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.tts-btn {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  border-radius: var(--gap-sm);
+  padding: var(--pad-sm) var(--pad-md);
+  font-family: inherit;
+  font-size: var(--small-font);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: var(--btn-size);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  transition: background .2s;
+}
+.tts-btn:hover { background: var(--accent-hover); }
+
+.translation-display {
+  color: var(--text-bright);
+  font-size: var(--font-size);
+  font-style: italic;
+  min-height: 24px;
+  line-height: 1.5;
+}
+
+/* answer input */
+.answer-input {
+  width: 100%;
+  padding: var(--input-pad);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-bright);
+  font-family: inherit;
+  font-size: var(--input-font);
+  outline: none;
+  transition: border-color .2s;
+}
+.answer-input:focus { border-color: var(--accent); }
+.answer-input.error { border-color: var(--error); }
+
+.validation-msg {
+  font-size: var(--small-font);
+  min-height: 20px;
+}
+.validation-msg.error { color: var(--error); }
+.validation-msg.success { color: var(--success); }
+
+/* nav buttons */
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--gap-lg);
+  gap: var(--gap-md);
+}
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: var(--btn-pad);
+  font-family: inherit;
+  font-size: var(--btn-font);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, transform .1s;
+  min-height: var(--btn-size);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+.btn:active { transform: scale(.96); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--border); color: var(--text); }
+.btn-secondary:hover { background: #3a3f58; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #16a34a; }
+.btn-danger { background: var(--error); color: #fff; }
+.btn-danger:hover { background: #e11d48; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── REVIEW SCREEN ── */
+.review-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.review-table th,
+.review-table td {
+  padding: var(--pad-md) var(--pad-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.review-table th {
+  background: #1a1d2e;
+  color: var(--text-muted);
+  font-size: var(--badge-font);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.review-table td { color: var(--text-bright); }
+.review-table tr:last-child td { border-bottom: none; }
+.edit-link {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--small-font);
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.edit-link:hover { text-decoration: underline; }
+
+.review-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--pad-lg);
+  gap: var(--gap-md);
+  flex-wrap: wrap;
+}
+
+/* ── PREVIEW SCREEN ── */
+.preview-shell {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-lg);
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gap-md);
+  margin-bottom: var(--pad-md);
+}
+.preview-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  background: #1a1d2e;
+  border: 1px solid var(--border);
+  padding: var(--pad-sm) var(--pad-md);
+  border-radius: var(--radius);
+}
+.preview-controls input[type="color"] {
+  width: 36px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.preview-controls select {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  border-radius: var(--gap-sm);
+  padding: var(--pad-sm);
+  font-family: inherit;
+  font-size: var(--small-font);
+}
+.preview-controls .label {
+  color: var(--text-muted);
+  font-size: var(--small-font);
+  margin-right: 6px;
+}
+.preview-controls .value {
+  color: var(--text-bright);
+  font-weight: 600;
+  min-width: 56px;
+  text-align: center;
+}
+.preview-page {
+  background: #0b0d13;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-md);
+  margin-bottom: var(--pad-md);
+}
+.preview-page canvas {
+  width: 100%;
+  display: block;
+  border-radius: var(--gap-sm);
+}
+.preview-page .page-label {
+  margin-top: var(--pad-sm);
+  color: var(--text-dim);
+  font-size: var(--badge-font);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.preview-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--gap-lg);
+  gap: var(--gap-md);
+  flex-wrap: wrap;
+}
+
+/* ── EXPORT SCREEN ── */
+.export-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-xl);
+  text-align: center;
+}
+.export-box h2 {
+  color: var(--text-heading);
+  font-size: var(--heading-size);
+  margin-bottom: var(--gap-md);
+}
+.export-box p {
+  color: var(--text-muted);
+  font-size: var(--font-size);
+  margin-bottom: var(--pad-lg);
+}
+.export-btns {
+  display: flex;
+  gap: var(--gap-md);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--pad-lg);
+}
+
+.summary-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad-md);
+  text-align: left;
+  white-space: pre-wrap;
+  font-family: "SF Mono", "Fira Code", monospace;
+  font-size: var(--small-font);
+  color: var(--text);
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: var(--pad-md);
+}
+
+/* ── responsive ── */
+@media (max-width: 700px) {
+  .wizard-body { grid-template-columns: 1fr; }
+  .thumb-card { max-width: var(--thumb-width); margin: 0 auto; }
+  body { padding-top: var(--pad-md); }
+  .topbar h1 { font-size: var(--font-size); }
+  .hero h2 { font-size: var(--sub-heading); }
+  .preview-controls { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <h1>Form<span class="accent">Ease</span></h1>
+  <div class="a11y-toggle">
+    <button class="a11y-btn active" data-mode="standard">
+      <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+      Standard
+    </button>
+    <button class="a11y-btn" data-mode="enlarged">
+      <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+      Enlarged
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: UPLOAD ═══════════ -->
+<div class="screen active" id="screen-upload">
+  <div class="hero">
+    <h2>Upload your <span class="accent">form</span></h2>
+    <p>Upload a form document (PDF or image). We'll detect the fields and guide you through filling it step by step.</p>
+  </div>
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" accept="image/*,.pdf">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    <h3>Drop your form here</h3>
+    <p>or <span class="browse">click to browse</span></p>
+    <p class="formats">PDF &middot; JPG &middot; PNG &middot; BMP &middot; TIFF &middot; WebP</p>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: PROCESSING ═══════════ -->
+<div class="screen" id="screen-processing">
+  <div class="processing-box">
+    <div class="spinner-lg"></div>
+    <p id="processingText">Analysing your form...</p>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: WIZARD ═══════════ -->
+<div class="screen" id="screen-wizard">
+  <div class="wizard-header">
+    <span class="step-label" id="stepLabel">Step 1 of 5</span>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="wizard-body">
+    <!-- left: form thumbnail with field highlight -->
+    <div class="thumb-card">
+      <canvas id="thumbCanvas"></canvas>
+      <div class="page-label" id="pageLabel">Page 1</div>
+    </div>
+
+    <!-- right: question + input -->
+    <div class="question-panel">
+      <div>
+        <span class="question-text" id="questionText"></span>
+        <span class="field-type-badge" id="fieldBadge"></span>
+      </div>
+
+      <div class="assist-row">
+        <button class="lang-btn" data-lang="zh">Chinese</button>
+        <button class="lang-btn" data-lang="ms">Malay</button>
+        <button class="lang-btn" data-lang="ta">Tamil</button>
+        <button class="tts-btn" id="ttsBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.49 4.49 0 0 0 2.5-3.5zM14 3.23v2.06a7.007 7.007 0 0 1 0 13.42v2.06A9.013 9.013 0 0 0 14 3.23z"/></svg>
+          Speak
+        </button>
+      </div>
+
+      <div class="translation-display" id="translationDisplay"></div>
+
+      <input class="answer-input" id="answerInput" type="text" placeholder="Type your answer here..." autocomplete="off">
+      <div class="validation-msg" id="validationMsg"></div>
+
+    </div>
+  </div>
+
+  <div class="wizard-nav">
+    <button class="btn btn-secondary" id="prevBtn">&larr; Back</button>
+    <button class="btn btn-primary" id="skipBtn">Skip</button>
+    <button class="btn btn-primary" id="nextBtn">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: REVIEW ═══════════ -->
+<div class="screen" id="screen-review">
+  <h2 style="color:var(--text-heading); margin-bottom:var(--pad-md); font-size:var(--heading-size);">Review Your Answers</h2>
+  <table class="review-table" id="reviewTable">
+    <thead><tr><th>#</th><th>Field</th><th>Your Answer</th><th></th></tr></thead>
+    <tbody id="reviewBody"></tbody>
+  </table>
+  <div class="review-actions">
+    <button class="btn btn-secondary" id="reviewBackBtn">&larr; Back to wizard</button>
+    <button class="btn btn-success" id="previewBtn">Preview &amp; Export</button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: PREVIEW ═══════════ -->
+<div class="screen" id="screen-preview">
+  <div class="preview-shell">
+    <div class="preview-header">
+      <h2 style="color:var(--text-heading); font-size:var(--heading-size);">Preview Before Export</h2>
+      <div class="preview-controls">
+        <span class="label">Font size</span>
+        <button class="btn btn-secondary" id="fontDecBtn" style="padding:var(--pad-sm) var(--pad-md);">A-</button>
+        <span class="value" id="fontSizeLabel">100%</span>
+        <button class="btn btn-secondary" id="fontIncBtn" style="padding:var(--pad-sm) var(--pad-md);">A+</button>
+        <span class="label" style="margin-left:var(--gap-sm);">Font</span>
+        <select id="fontFamilySelect">
+          <option value="Helvetica">Helvetica</option>
+          <option value="Times-Roman">Times</option>
+          <option value="Courier">Courier</option>
+        </select>
+        <span class="label" style="margin-left:var(--gap-sm);">Color</span>
+        <input type="color" id="fontColorInput" value="#1d4ed8">
+      </div>
+    </div>
+    <div id="previewPages"></div>
+    <div class="preview-actions">
+      <button class="btn btn-secondary" id="previewBackBtn">&larr; Back to review</button>
+      <button class="btn btn-primary" id="previewExportBtn">Generate PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: EXPORT ═══════════ -->
+<div class="screen" id="screen-export">
+  <div class="export-box">
+    <h2 style="color:var(--success);">Form Complete!</h2>
+    <p>Your filled form is ready to download.</p>
+    <div class="export-btns">
+      <button class="btn btn-primary" id="downloadPdfBtn">Download PDF</button>
+      <button class="btn btn-secondary" id="copySummaryBtn">Copy Summary</button>
+    </div>
+    <div class="summary-box" id="summaryBox"></div>
+  </div>
+  <div style="text-align:center; margin-top:var(--pad-lg);">
+    <button class="btn btn-secondary" id="startOverBtn">&larr; Start Over</button>
+  </div>
+</div>
+
+<!-- ═══════════ APP LOGIC ═══════════ -->
+<script>
+(() => {
+  /* ─── State ─── */
+  let sessionId = null;
+  let pages = [];
+  let fields = [];
+  let currentStep = 0;
+  let answers = {};
+  let accessMode = "standard";
+  let exportData = null;
+  let currentAudio = null;
+  let activeLang = null;
+  let previewFontScale = 1;
+  let previewFontFamily = "Helvetica";
+  let previewTextColor = "#1d4ed8";
+  let fieldOffsets = {};
+
+  /* thumbnail images (Image objects keyed by page_index) */
+  const thumbImages = {};
+
+  /* ─── Element refs ─── */
+  const $ = (id) => document.getElementById(id);
+  const screens = {
+    upload: $("screen-upload"),
+    processing: $("screen-processing"),
+    wizard: $("screen-wizard"),
+    review: $("screen-review"),
+    preview: $("screen-preview"),
+    export: $("screen-export"),
+  };
+
+  function showScreen(name) {
+    Object.values(screens).forEach(s => s.classList.remove("active"));
+    screens[name].classList.add("active");
+  }
+
+  /* ─── Accessibility toggle ─── */
+  document.querySelectorAll(".a11y-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".a11y-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      accessMode = btn.dataset.mode;
+      document.body.className = accessMode === "standard" ? "" : accessMode;
+    });
+  });
+
+  /* ─── Upload handling ─── */
+  const dropzone = $("dropzone");
+  const fileInput = $("fileInput");
+
+  dropzone.addEventListener("click", () => fileInput.click());
+  dropzone.addEventListener("dragover", (e) => { e.preventDefault(); dropzone.classList.add("over"); });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("over"));
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("over");
+    const file = e.dataTransfer.files[0];
+    if (file) handleUpload(file);
+  });
+  fileInput.addEventListener("change", (e) => {
+    if (e.target.files[0]) handleUpload(e.target.files[0]);
+  });
+
+  async function handleUpload(file) {
+    showScreen("processing");
+    $("processingText").textContent = "Analysing your form...";
+
+    try {
+      const fd = new FormData();
+      fd.append("document", file);
+
+      const res = await fetch("/upload", { method: "POST", body: fd });
+      const { data, raw } = await safeJson(res);
+      if (!res.ok) throw new Error((data && data.error) || raw || "Upload failed.");
+      if (!data) throw new Error("Upload failed: invalid server response.");
+
+      sessionId = data.session_id;
+      pages = data.pages;
+      fields = data.fields;
+
+      if (fields.length === 0) {
+        throw new Error("No form fields detected. Try a clearer image or PDF.");
+      }
+
+      // Pre-load thumbnail images
+      for (const pg of pages) {
+        const img = new Image();
+        img.src = "data:image/jpeg;base64," + pg.thumbnail;
+        thumbImages[pg.page_index] = img;
+      }
+
+      // Init answers
+      answers = {};
+      fields.forEach(f => { answers[f.field_id] = ""; });
+
+      currentStep = 0;
+      showScreen("wizard");
+      renderWizardStep();
+
+    } catch (err) {
+      showScreen("upload");
+      alert(err.message);
+    }
+  }
+
+  async function safeJson(res) {
+    const text = await res.text();
+    try {
+      return { data: JSON.parse(text), raw: text };
+    } catch {
+      return { data: null, raw: text };
+    }
+  }
+
+  /* ─── Wizard rendering ─── */
+  function renderWizardStep() {
+    const f = fields[currentStep];
+    const total = fields.length;
+
+    $("stepLabel").textContent = `Step ${currentStep + 1} of ${total}`;
+    $("progressFill").style.width = ((currentStep + 1) / total * 100) + "%";
+    $("pageLabel").textContent = `Page ${f.page_index + 1}`;
+
+    // Question
+    $("questionText").textContent = f.label_text;
+    $("fieldBadge").textContent = f.field_type;
+
+    // Clear translation + validation
+    $("translationDisplay").textContent = "";
+    $("validationMsg").textContent = "";
+    $("validationMsg").className = "validation-msg";
+    activeLang = null;
+    document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+
+    // Restore answer if previously filled
+    $("answerInput").value = answers[f.field_id] || "";
+    $("answerInput").className = "answer-input";
+    $("answerInput").placeholder = getPlaceholder(f.field_type);
+
+    // Nav buttons
+    $("prevBtn").disabled = currentStep === 0;
+    $("nextBtn").textContent = currentStep === total - 1 ? "Review" : "Next \u2192";
+
+    // Draw thumbnail with highlight
+    drawThumbnail(f);
+  }
+
+  function getPlaceholder(type) {
+    const map = {
+      text: "Type your answer here...",
+      email: "e.g. name@example.com",
+      phone: "e.g. +65 9123 4567",
+      date: "e.g. DD/MM/YYYY",
+      nric: "e.g. S1234567A",
+      number: "Enter a number...",
+      checkbox: "Yes / No",
+    };
+    return map[type] || "Type your answer here...";
+  }
+
+  function drawThumbnail(field) {
+    const canvas = $("thumbCanvas");
+    const ctx = canvas.getContext("2d");
+    const pageInfo = pages[field.page_index];
+    const thumbImg = thumbImages[field.page_index];
+
+    if (!thumbImg || !thumbImg.complete) {
+      thumbImg.onload = () => drawThumbnail(field);
+      return;
+    }
+
+    canvas.width = thumbImg.naturalWidth;
+    canvas.height = thumbImg.naturalHeight;
+    ctx.drawImage(thumbImg, 0, 0);
+
+    // Scale bounding box from original coords to thumbnail coords
+    const sx = canvas.width / pageInfo.width;
+    const sy = canvas.height / pageInfo.height;
+
+    const [x1, y1, x2, y2] = field.label_bbox;
+    const rx = x1 * sx - 4;
+    const ry = y1 * sy - 4;
+    const rw = (x2 - x1) * sx + 8;
+    const rh = (y2 - y1) * sy + 8;
+
+    ctx.strokeStyle = "#6366f1";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(rx, ry, rw, rh);
+
+    // Also highlight target area
+    const [tx1, ty1, tx2, ty2] = field.target_bbox;
+    ctx.fillStyle = "rgba(99,102,241,0.15)";
+    ctx.fillRect(tx1 * sx, ty1 * sy, (tx2 - tx1) * sx, (ty2 - ty1) * sy);
+  }
+
+  /* ─── Navigation ─── */
+  $("prevBtn").addEventListener("click", () => {
+    if (currentStep > 0) {
+      saveCurrentAnswer();
+      currentStep--;
+      renderWizardStep();
+    }
+  });
+
+  $("nextBtn").addEventListener("click", () => {
+    attemptNext();
+  });
+
+  $("skipBtn").addEventListener("click", () => {
+    saveCurrentAnswer();
+    if (currentStep < fields.length - 1) {
+      currentStep++;
+      renderWizardStep();
+    } else {
+      goToReview();
+    }
+  });
+
+  async function attemptNext() {
+    saveCurrentAnswer();
+    const f = fields[currentStep];
+    const answer = answers[f.field_id];
+
+    // Validate via backend
+    try {
+      const res = await fetch("/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, field_id: f.field_id, answer }),
+      });
+      const data = await res.json();
+
+      if (!data.valid) {
+        $("validationMsg").textContent = data.message;
+        $("validationMsg").className = "validation-msg error";
+        $("answerInput").className = "answer-input error";
+        return;
+      }
+
+    } catch (err) {
+      // Network error - allow to proceed
+    }
+
+    advanceStep();
+  }
+
+  function advanceStep() {
+    if (currentStep < fields.length - 1) {
+      currentStep++;
+      renderWizardStep();
+    } else {
+      goToReview();
+    }
+  }
+
+  function saveCurrentAnswer() {
+    const f = fields[currentStep];
+    answers[f.field_id] = $("answerInput").value;
+  }
+
+  /* allow Enter key to go next */
+  $("answerInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") attemptNext();
+  });
+
+  /* ─── TTS ─── */
+  $("ttsBtn").addEventListener("click", () => speakCurrent());
+
+  async function speakCurrent() {
+    const f = fields[currentStep];
+    const lang = activeLang || "en";
+
+    try {
+      const res = await fetch(`/tts/${sessionId}/${f.field_id}?lang=${lang}`);
+      const data = await res.json();
+      if (data.audio) {
+        if (currentAudio) { currentAudio.pause(); }
+        const raw = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0));
+        const blob = new Blob([raw], { type: "audio/mpeg" });
+        const url = URL.createObjectURL(blob);
+        currentAudio = new Audio(url);
+        currentAudio.play();
+      }
+    } catch (err) { /* silent fail */ }
+  }
+
+  /* ─── Translation ─── */
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const lang = btn.dataset.lang;
+      const f = fields[currentStep];
+
+      // Toggle off if same lang clicked
+      if (activeLang === lang) {
+        activeLang = null;
+        $("translationDisplay").textContent = "";
+        document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+        return;
+      }
+
+      activeLang = lang;
+      document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      $("translationDisplay").textContent = "Translating...";
+
+      try {
+        const res = await fetch("/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, field_id: f.field_id, target_lang: lang }),
+        });
+        const data = await res.json();
+        $("translationDisplay").textContent = data.translated || data.original;
+      } catch (err) {
+        $("translationDisplay").textContent = "(translation unavailable)";
+      }
+    });
+  });
+
+  /* ─── Review screen ─── */
+  function goToReview() {
+    saveCurrentAnswer();
+
+    // Save answers to server
+    fetch("/save-answers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, answers }),
+    });
+
+    const tbody = $("reviewBody");
+    tbody.innerHTML = "";
+
+    fields.forEach((f, i) => {
+      const tr = document.createElement("tr");
+      const answer = answers[f.field_id] || "";
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td>${f.label_text}</td>
+        <td>${answer || '<span style="color:var(--text-dim)">(empty)</span>'}</td>
+        <td><button class="edit-link" data-step="${i}">Edit</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Wire up edit links
+    tbody.querySelectorAll(".edit-link").forEach(link => {
+      link.addEventListener("click", () => {
+        currentStep = parseInt(link.dataset.step);
+        showScreen("wizard");
+        renderWizardStep();
+      });
+    });
+
+    showScreen("review");
+  }
+
+  $("reviewBackBtn").addEventListener("click", () => {
+    showScreen("wizard");
+    renderWizardStep();
+  });
+
+  /* ─── Preview screen ─── */
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function renderPreview() {
+    const container = $("previewPages");
+    container.innerHTML = "";
+
+    const label = $("fontSizeLabel");
+    label.textContent = `${Math.round(previewFontScale * 100)}%`;
+    $("fontFamilySelect").value = previewFontFamily;
+    $("fontColorInput").value = previewTextColor;
+
+    pages.forEach(pg => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "preview-page";
+
+      const canvas = document.createElement("canvas");
+      const pageLabel = document.createElement("div");
+      pageLabel.className = "page-label";
+      pageLabel.textContent = `Page ${pg.page_index + 1}`;
+
+      wrapper.appendChild(canvas);
+      wrapper.appendChild(pageLabel);
+      container.appendChild(wrapper);
+
+      drawPreviewPage(canvas, pg);
+    });
+  }
+
+  function getFieldOffset(fieldId) {
+    if (!fieldOffsets[fieldId]) fieldOffsets[fieldId] = { dx: 0, dy: 0 };
+    return fieldOffsets[fieldId];
+  }
+
+  function drawPreviewPage(canvas, pg) {
+    const img = thumbImages[pg.page_index];
+    if (!img || !img.complete) {
+      if (img) img.onload = () => drawPreviewPage(canvas, pg);
+      return;
+    }
+
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    const sx = canvas.width / pg.width;
+    const sy = canvas.height / pg.height;
+
+    const pageFields = fields.filter(f => f.page_index === pg.page_index);
+    const rects = [];
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      rects.length = 0;
+
+      pageFields.forEach(f => {
+        const answer = answers[f.field_id] || "";
+        if (!answer.trim()) return;
+
+        const [x1, y1, x2, y2] = f.target_bbox;
+        const offset = getFieldOffset(f.field_id);
+        const rx = x1 * sx;
+        const ry = y1 * sy;
+        const rw = (x2 - x1) * sx;
+        const rh = (y2 - y1) * sy;
+
+        rects.push({ field_id: f.field_id, x: rx, y: ry, w: rw, h: rh, sx, sy });
+
+        ctx.strokeStyle = "rgba(99,102,241,0.35)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        const boxWidth = rw;
+        let fontSize = Math.min(16, boxWidth / Math.max(answer.length * 0.6, 1));
+        fontSize = Math.max(8, fontSize) * previewFontScale;
+
+        ctx.font = `${fontSize}px ${previewFontFamily}, Arial, sans-serif`;
+        ctx.fillStyle = previewTextColor;
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText(
+          answer,
+          (x1 + offset.dx) * sx + 2,
+          (y2 + offset.dy) * sy - 4
+        );
+      });
+    }
+
+    function canvasPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+      return { x, y };
+    }
+
+    let dragging = null;
+
+    canvas.onpointerdown = (e) => {
+      const pos = canvasPos(e);
+      for (const r of rects) {
+        if (pos.x >= r.x && pos.x <= r.x + r.w && pos.y >= r.y && pos.y <= r.y + r.h) {
+          const base = getFieldOffset(r.field_id);
+          dragging = {
+            field_id: r.field_id,
+            startX: pos.x,
+            startY: pos.y,
+            baseDx: base.dx,
+            baseDy: base.dy,
+            sx: r.sx,
+            sy: r.sy,
+          };
+          canvas.setPointerCapture(e.pointerId);
+          break;
+        }
+      }
+    };
+
+    canvas.onpointermove = (e) => {
+      if (!dragging) return;
+      const pos = canvasPos(e);
+      const dxCanvas = pos.x - dragging.startX;
+      const dyCanvas = pos.y - dragging.startY;
+      const dx = dragging.baseDx + dxCanvas / dragging.sx;
+      const dy = dragging.baseDy + dyCanvas / dragging.sy;
+      fieldOffsets[dragging.field_id] = { dx, dy };
+      render();
+    };
+
+    canvas.onpointerup = (e) => {
+      if (!dragging) return;
+      dragging = null;
+      canvas.releasePointerCapture(e.pointerId);
+    };
+
+    canvas.onpointerleave = () => {
+      dragging = null;
+    };
+
+    render();
+  }
+
+  $("previewBtn").addEventListener("click", () => {
+    saveCurrentAnswer();
+    renderPreview();
+    showScreen("preview");
+  });
+
+  $("previewBackBtn").addEventListener("click", () => {
+    showScreen("review");
+  });
+
+  $("fontDecBtn").addEventListener("click", () => {
+    previewFontScale = clamp(previewFontScale - 0.1, 0.6, 1.6);
+    renderPreview();
+  });
+
+  $("fontIncBtn").addEventListener("click", () => {
+    previewFontScale = clamp(previewFontScale + 0.1, 0.6, 1.6);
+    renderPreview();
+  });
+
+  $("fontFamilySelect").addEventListener("change", (e) => {
+    previewFontFamily = e.target.value;
+    renderPreview();
+  });
+
+  $("fontColorInput").addEventListener("change", (e) => {
+    previewTextColor = e.target.value || "#1d4ed8";
+    renderPreview();
+  });
+
+  /* ─── Export ─── */
+  async function startExport() {
+    // Save answers first
+    await fetch("/save-answers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, answers }),
+    });
+
+    showScreen("processing");
+    $("processingText").textContent = "Generating your filled PDF...";
+
+    try {
+      const res = await fetch("/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          font_scale: previewFontScale,
+          font_family: previewFontFamily,
+          font_color: previewTextColor,
+          offsets: fieldOffsets,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Export failed.");
+
+      exportData = data;
+      $("summaryBox").textContent = data.summary;
+      showScreen("export");
+
+    } catch (err) {
+      alert(err.message);
+      showScreen("preview");
+    }
+  }
+
+  $("previewExportBtn").addEventListener("click", startExport);
+
+  $("downloadPdfBtn").addEventListener("click", () => {
+    if (!exportData) return;
+    const raw = Uint8Array.from(atob(exportData.pdf), c => c.charCodeAt(0));
+    const blob = new Blob([raw], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = exportData.filename || "filled_form.pdf";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  $("copySummaryBtn").addEventListener("click", () => {
+    if (!exportData) return;
+    navigator.clipboard.writeText(exportData.summary).then(() => {
+      $("copySummaryBtn").textContent = "Copied!";
+      setTimeout(() => { $("copySummaryBtn").textContent = "Copy Summary"; }, 2000);
+    });
+  });
+
+  $("startOverBtn").addEventListener("click", () => {
+    sessionId = null;
+    pages = [];
+    fields = [];
+    currentStep = 0;
+    answers = {};
+    exportData = null;
+    previewFontScale = 1;
+    previewFontFamily = "Helvetica";
+    previewTextColor = "#1d4ed8";
+    fieldOffsets = {};
+    fileInput.value = "";
+    showScreen("upload");
+  });
+
+})();
+</script>
+</body>
+</html>
