@@ -8,7 +8,7 @@ Upload a form (PDF or image), let AI detect every field, then fill it step-by-st
 
 ## What It Does
 
-1. **Upload** — Drag a form (PDF or image) onto the dropzone
+1. **Upload** — Upload a pdf/jpg onto the dropzone
 2. **AI Detection** — OCR + LLM automatically detect all form fields (name, email, phone, NRIC, date, etc.)
 3. **Step-by-Step Wizard** — Fill each field one at a time with:
    - **Text-to-Speech** — hear the question read aloud (English, Chinese, Malay, Tamil)
